@@ -20,17 +20,20 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $hubstaffService = app(App\Services\HubstaffService::class);
     $userData = null;
+    $organizationData = null;
     
     try {
         if (Cache::has('hubstaff_access_token')) {
             $userData = $hubstaffService->getUserInfo();
+            $organizationData = $hubstaffService->getOrganizationInfo();
         }
     } catch (\Exception $e) {
-        // Si hay error, simplemente dejamos userData como null
+        // Si hay error, simplemente dejamos los datos como null
     }
 
     return Inertia::render('Dashboard', [
-        'hubstaffUser' => $userData
+        'hubstaffUser' => $userData,
+        'hubstaffOrganization' => $organizationData
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
