@@ -30,6 +30,18 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    href={route('tasks.index')}
+                                    active={route().current('tasks.create')}
+                                >
+                                    Tasks
+                                </NavLink>
+                                <NavLink
+                                    href={route('tasks.create')}
+                                    active={route().current('tasks.create')}
+                                >
+                                    Crear Tarea
+                                </NavLink>
                             </div>
                         </div>
 
@@ -133,6 +145,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('dashboard')}
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('tasks.create')}
+                            active={route().current('tasks.create')}
+                        >
+                            Crear Tarea
                         </ResponsiveNavLink>
                     </div>
 

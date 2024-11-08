@@ -6,6 +6,7 @@ use App\Http\Controllers\HubstaffAuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -17,7 +18,20 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $hubstaffService = app(App\Services\HubstaffService::class);
+    $userData = null;
+    
+    try {
+        if (Cache::has('hubstaff_access_token')) {
+            $userData = $hubstaffService->getUserInfo();
+        }
+    } catch (\Exception $e) {
+        // Si hay error, simplemente dejamos userData como null
+    }
+
+    return Inertia::render('Dashboard', [
+        'hubstaffUser' => $userData
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

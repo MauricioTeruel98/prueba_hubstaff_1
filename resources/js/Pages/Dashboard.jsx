@@ -2,11 +2,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-export default function Dashboard() {
+export default function Dashboard({ hubstaffUser }) {
     const [connectionStatus, setConnectionStatus] = useState('checking');
 
     useEffect(() => {
-        // Verificar si existe el token en cache
+        console.log('Hubstaff user data:', hubstaffUser);
         fetch('/api/hubstaff/check-connection')
             .then(response => response.json())
             .then(data => {
@@ -34,8 +34,24 @@ export default function Dashboard() {
                             <p className="mb-4">You're logged in!</p>
                             
                             {connectionStatus === 'connected' ? (
-                                <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
-                                    ✅ Conectado exitosamente con Hubstaff
+                                <div>
+                                    <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
+                                        ✅ Conectado exitosamente con Hubstaff
+                                    </div>
+                                    
+                                    {hubstaffUser && (
+                                        <div className="mt-4">
+                                            <h3 className="text-lg font-semibold mb-3">Información de Hubstaff</h3>
+                                            <div className="bg-gray-50 p-4 rounded-lg">
+                                                <p><strong>ID:</strong> {hubstaffUser.id}</p>
+                                                <p><strong>Nombre:</strong> {hubstaffUser.name}</p>
+                                                <p><strong>Email:</strong> {hubstaffUser.email}</p>
+                                                <p><strong>Timezone:</strong> {hubstaffUser.timezone}</p>
+                                                <p><strong>Estado:</strong> {hubstaffUser.status}</p>
+                                                <p><strong>Última actividad:</strong> {new Date(hubstaffUser.last_activity).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ) : connectionStatus === 'disconnected' ? (
                                 <a

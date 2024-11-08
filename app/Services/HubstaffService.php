@@ -46,4 +46,32 @@ class HubstaffService
             throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
         }
     }
+
+    public function getUserInfo()
+    {
+        try {
+            $response = Http::withOptions([
+                'verify' => !app()->environment('local')
+            ])->withToken($this->getAccessToken())
+                ->get("{$this->baseUrl}/users/me");
+
+            \Log::info('Hubstaff User Response:', [
+                'status' => $response->status(),
+                'body' => $response->json()
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['user'] ?? null;
+            }
+
+            throw new Exception('Error al obtener información del usuario: ' . $response->body());
+        } catch (Exception $e) {
+            \Log::error('Error en getUserInfo:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
+        }
+    }
 }
