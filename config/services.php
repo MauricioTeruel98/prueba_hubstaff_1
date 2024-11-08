@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'hubstaff' => [
+        'client_id' => env('HUBSTAFF_CLIENT_ID'),
+        'client_secret' => env('HUBSTAFF_CLIENT_SECRET'),
+        'redirect_uri' => env('HUBSTAFF_REDIRECT_URI'),
+    ],
+
 ];
