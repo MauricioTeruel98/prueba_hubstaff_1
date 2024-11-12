@@ -38,7 +38,7 @@ return [
     'hubstaff' => [
         'client_id' => env('HUBSTAFF_CLIENT_ID'),
         'client_secret' => env('HUBSTAFF_CLIENT_SECRET'),
-        'redirect_uri' => env('HUBSTAFF_REDIRECT_URI'),
+        'api_url' => env('HUBSTAFF_API_URL', 'https://api.hubstaff.com/v2'),
     ],
 
 ];

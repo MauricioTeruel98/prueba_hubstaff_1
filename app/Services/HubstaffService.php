@@ -9,6 +9,27 @@ use Exception;
 class HubstaffService
 {
     protected $baseUrl = 'https://api.hubstaff.com/v2';
+    protected $organizationId;
+
+    public function __construct()
+    {
+        $this->baseUrl = rtrim(config('services.hubstaff.api_url'), '/');
+        $this->clientId = config('services.hubstaff.client_id');
+        $this->clientSecret = config('services.hubstaff.client_secret');
+        
+        // Intentar obtener el organization_id del cache
+        $this->organizationId = Cache::get('hubstaff_organization_id');
+        
+        if (!$this->organizationId) {
+            try {
+                $orgInfo = $this->getOrganizationInfo();
+                $this->organizationId = $orgInfo['id'];
+                Cache::put('hubstaff_organization_id', $this->organizationId, now()->addDay());
+            } catch (\Exception $e) {
+                \Log::error('Error al obtener organization_id: ' . $e->getMessage());
+            }
+        }
+    }
 
     protected function getAccessToken()
     {
@@ -188,10 +209,14 @@ class HubstaffService
         }
     }
 
-    private function getOrganizationId()
+    public function getOrganizationId()
     {
-        $organization = $this->getOrganizationInfo();
-        return $organization['id'] ?? null;
+        if (!$this->organizationId) {
+            $orgInfo = $this->getOrganizationInfo();
+            $this->organizationId = $orgInfo['id'];
+            Cache::put('hubstaff_organization_id', $this->organizationId, now()->addDay());
+        }
+        return $this->organizationId;
     }
 
     public function getProject($projectId)
@@ -240,6 +265,59 @@ class HubstaffService
 
             throw new Exception('Error al obtener las tareas: ' . $response->body());
         } catch (Exception $e) {
+            throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
+        }
+    }
+
+    public function getActivities($startDate = null, $endDate = null, $projectId = null, $userId = null)
+    {
+        try {
+            $startDate = $startDate ?? now()->subDays(7)->startOfDay();
+            $endDate = $endDate ?? now()->endOfDay();
+            
+            $organizationId = $this->getOrganizationId();
+
+            $params = [
+                'date' => [
+                    'start' => $startDate->format('Y-m-d'),
+                    'stop' => $endDate->format('Y-m-d')
+                ]
+            ];
+
+            if ($projectId) {
+                $params['projects'] = $projectId;
+            }
+
+            if ($userId) {
+                $params['users'] = $userId;
+            }
+
+            $url = "{$this->baseUrl}/organizations/{$organizationId}/activities/daily";
+
+            \Log::info('Solicitando actividades:', [
+                'url' => $url,
+                'params' => $params
+            ]);
+
+            $response = Http::withOptions([
+                'verify' => !app()->environment('local')
+            ])->withToken($this->getAccessToken())
+                ->get($url, $params);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                \Log::info('Respuesta exitosa de actividades', [
+                    'data' => $data
+                ]);
+                return $data;
+            }
+
+            throw new Exception('Error al obtener actividades: ' . $response->body());
+        } catch (Exception $e) {
+            \Log::error('Error en getActivities:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
         }
     }
