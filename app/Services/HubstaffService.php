@@ -193,4 +193,54 @@ class HubstaffService
         $organization = $this->getOrganizationInfo();
         return $organization['id'] ?? null;
     }
+
+    public function getProject($projectId)
+    {
+        try {
+            $response = Http::withOptions([
+                'verify' => !app()->environment('local')
+            ])->withToken($this->getAccessToken())
+                ->get("{$this->baseUrl}/projects/{$projectId}");
+
+            if ($response->successful()) {
+                return $response->json()['project'] ?? null;
+            }
+
+            throw new Exception('Error al obtener el proyecto: ' . $response->body());
+        } catch (Exception $e) {
+            throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
+        }
+    }
+
+    public function getProjectTasks($projectId, $page = 1, $perPage = 10)
+    {
+        try {
+            $offset = ($page - 1) * $perPage;
+            
+            $response = Http::withOptions([
+                'verify' => !app()->environment('local')
+            ])->withToken($this->getAccessToken())
+                ->get("{$this->baseUrl}/projects/{$projectId}/tasks", [
+                    'offset' => $offset,
+                    'limit' => $perPage,
+                    'status' => 'active'
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return [
+                    'data' => $data['tasks'] ?? [],
+                    'meta' => [
+                        'current_page' => $page,
+                        'per_page' => $perPage,
+                        'total' => $data['pagination']['total_items'] ?? 0
+                    ]
+                ];
+            }
+
+            throw new Exception('Error al obtener las tareas: ' . $response->body());
+        } catch (Exception $e) {
+            throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
+        }
+    }
 }
