@@ -6,6 +6,7 @@ use App\Models\HubstaffTask;
 use App\Services\HubstaffService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class HubstaffTaskController extends Controller
 {
@@ -21,10 +22,12 @@ class HubstaffTaskController extends Controller
         try {
             $projects = $this->hubstaffService->getProjects();
             $users = $this->hubstaffService->getOrganizationUsers();
+            $token = Cache::get('hubstaff_access_token');
 
             return Inertia::render('Tasks/Create', [
                 'projects' => $projects,
-                'users' => $users
+                'users' => $users,
+                'hubstaffToken' => $token
             ]);
         } catch (\Exception $e) {
             return back()->withErrors([

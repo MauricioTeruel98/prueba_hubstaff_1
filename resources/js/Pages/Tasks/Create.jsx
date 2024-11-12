@@ -6,7 +6,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 
-export default function Create({ auth, projects, users }) {
+export default function Create({ auth, projects, users, hubstaffToken }) {
     const [generalError, setGeneralError] = useState('');
     const { data, setData, post, processing, errors, reset } = useForm({
         project_id: '',
@@ -33,6 +33,32 @@ export default function Create({ auth, projects, users }) {
     };
 
 console.log(projects)
+
+    console.log('Token actual:', hubstaffToken);
+
+    const testApiCall = () => {
+        fetch('https://api.hubstaff.com/v2/projects/2638530/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${hubstaffToken}`
+            },
+            body: JSON.stringify({
+                assignee_id: 2934955,
+                summary: "Test task",
+                metadata: [
+                    {
+                        key: "description",
+                        value: "Test description"
+                    }
+                ]
+            })
+        })
+        .then(response => response.json())
+        .then(data => console.log('Respuesta:', data))
+        .catch(error => console.error('Error:', error));
+    };
 
     return (
         <AuthenticatedLayout user={auth.user}>

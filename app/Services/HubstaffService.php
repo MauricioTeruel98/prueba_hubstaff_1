@@ -24,18 +24,35 @@ class HubstaffService
     public function createTask(array $data)
     {
         try {
+            $payload = [
+                'assignee_id' => $data['assignee_id'] ? (int)$data['assignee_id'] : null,
+                'summary' => $data['title'],
+                'metadata' => [
+                    [
+                        'key' => 'description',
+                        'value' => $data['description'] ?? ''
+                    ],
+                    [
+                        'key' => 'due_date',
+                        'value' => $data['due_date'] ?? ''
+                    ]
+                ]
+            ];
+
+            \Log::info('Intentando crear tarea en Hubstaff:', [
+                'project_id' => $data['project_id'],
+                'payload' => $payload
+            ]);
+
             $response = Http::withOptions([
                 'verify' => !app()->environment('local')
             ])->withToken($this->getAccessToken())
-                ->post("{$this->baseUrl}/projects/{$data['project_id']}/tasks", [
-                    'task' => [
-                        'summary' => $data['title'],
-                        'description' => $data['description'] ?? '',
-                        'assignee_id' => $data['assignee_id'] ?? null,
-                        'due_date' => $data['due_date'] ?? null,
-                        'status' => $data['status'] ?? 'open'
-                    ]
-                ]);
+                ->post("{$this->baseUrl}/projects/{$data['project_id']}/tasks", $payload);
+
+            \Log::info('Respuesta de Hubstaff:', [
+                'status' => $response->status(),
+                'body' => $response->json()
+            ]);
 
             if ($response->successful()) {
                 return $response->json();
@@ -43,6 +60,10 @@ class HubstaffService
 
             throw new Exception('Error al crear la tarea en Hubstaff: ' . $response->body());
         } catch (Exception $e) {
+            \Log::error('Error en createTask:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
         }
     }
@@ -113,7 +134,11 @@ class HubstaffService
                 ->get("{$this->baseUrl}/organizations/{$this->getOrganizationId()}/projects");
 
             if ($response->successful()) {
-                return $response->json()['projects'] ?? [];
+                $projects = $response->json()['projects'] ?? [];
+                // Filtrar solo los proyectos que permiten crear tareas
+                return array_filter($projects, function($project) {
+                    return empty($project['task_integration']);
+                });
             }
 
             throw new Exception('Error al obtener los proyectos: ' . $response->body());
