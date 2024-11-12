@@ -25,18 +25,11 @@ class HubstaffService
     {
         try {
             $payload = [
-                'assignee_id' => $data['assignee_id'] ? (int)$data['assignee_id'] : null,
+                'status' => 'active',
                 'summary' => $data['title'],
-                'metadata' => [
-                    [
-                        'key' => 'description',
-                        'value' => $data['description'] ?? ''
-                    ],
-                    [
-                        'key' => 'due_date',
-                        'value' => $data['due_date'] ?? ''
-                    ]
-                ]
+                'details' => $data['description'] ?? '',
+                'assignee_id' => $data['assignee_id'] ? (int)$data['assignee_id'] : null,
+                'metadata' => []
             ];
 
             \Log::info('Intentando crear tarea en Hubstaff:', [
@@ -55,7 +48,24 @@ class HubstaffService
             ]);
 
             if ($response->successful()) {
-                return $response->json();
+                $taskData = $response->json();
+                
+                // Formatear la respuesta para que coincida con el formato deseado
+                return [
+                    'task' => [
+                        'id' => $taskData['task']['id'] ?? null,
+                        'integration_id' => $taskData['task']['integration_id'] ?? null,
+                        'status' => 'active',
+                        'project_id' => (int)$data['project_id'],
+                        'project_type' => 'project',
+                        'summary' => $data['title'],
+                        'details' => $data['description'] ?? '',
+                        'assignee_ids' => $data['assignee_id'] ? [(int)$data['assignee_id']] : [],
+                        'metadata' => [],
+                        'created_at' => $taskData['task']['created_at'] ?? now()->toIso8601String(),
+                        'updated_at' => $taskData['task']['updated_at'] ?? now()->toIso8601String()
+                    ]
+                ];
             }
 
             throw new Exception('Error al crear la tarea en Hubstaff: ' . $response->body());

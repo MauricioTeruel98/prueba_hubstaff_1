@@ -54,8 +54,8 @@ class HubstaffTaskController extends Controller
             HubstaffTask::create([
                 'hubstaff_id' => $hubstaffResponse['task']['id'],
                 'project_id' => $validated['project_id'],
-                'title' => $validated['title'],
-                'description' => $validated['description'],
+                'title' => $hubstaffResponse['task']['summary'],
+                'description' => $hubstaffResponse['task']['details'] ?? '',
                 'due_date' => $validated['due_date'],
                 'assignee_id' => $validated['assignee_id'],
             ]);
