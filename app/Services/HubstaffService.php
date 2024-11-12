@@ -103,4 +103,59 @@ class HubstaffService
             throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
         }
     }
+
+    public function getProjects()
+    {
+        try {
+            $response = Http::withOptions([
+                'verify' => !app()->environment('local')
+            ])->withToken($this->getAccessToken())
+                ->get("{$this->baseUrl}/organizations/{$this->getOrganizationId()}/projects");
+
+            if ($response->successful()) {
+                return $response->json()['projects'] ?? [];
+            }
+
+            throw new Exception('Error al obtener los proyectos: ' . $response->body());
+        } catch (Exception $e) {
+            throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
+        }
+    }
+
+    public function getOrganizationUsers()
+    {
+        try {
+            $response = Http::withOptions([
+                'verify' => !app()->environment('local')
+            ])->withToken($this->getAccessToken())
+                ->get("{$this->baseUrl}/organizations/{$this->getOrganizationId()}/members");
+
+            if ($response->successful()) {
+                $members = $response->json()['members'] ?? [];
+                
+                return array_map(function($member) {
+                    $user = $member['user'] ?? [];
+                    return [
+                        'id' => $user['id'] ?? $member['user_id'],
+                        'name' => $user['name'] ?? 'Sin nombre',
+                        'email' => $user['email'] ?? 'Sin email',
+                        'membership_role' => $member['membership_role'] ?? 'Sin rol',
+                        'effective_role' => $member['effective_role'] ?? 'Sin rol efectivo',
+                        'trackable' => $member['trackable'] ?? false,
+                        'status' => $member['membership_status'] ?? 'unknown'
+                    ];
+                }, $members);
+            }
+
+            throw new Exception('Error al obtener los usuarios: ' . $response->body());
+        } catch (Exception $e) {
+            throw new Exception('Error en el servicio de Hubstaff: ' . $e->getMessage());
+        }
+    }
+
+    private function getOrganizationId()
+    {
+        $organization = $this->getOrganizationInfo();
+        return $organization['id'] ?? null;
+    }
 }

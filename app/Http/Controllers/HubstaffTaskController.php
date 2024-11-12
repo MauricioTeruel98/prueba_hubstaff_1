@@ -18,7 +18,19 @@ class HubstaffTaskController extends Controller
 
     public function create()
     {
-        return Inertia::render('Tasks/Create');
+        try {
+            $projects = $this->hubstaffService->getProjects();
+            $users = $this->hubstaffService->getOrganizationUsers();
+
+            return Inertia::render('Tasks/Create', [
+                'projects' => $projects,
+                'users' => $users
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'error' => 'Error al cargar datos: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function store(Request $request)
