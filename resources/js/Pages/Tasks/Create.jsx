@@ -5,9 +5,8 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import Alert from '@/Components/Alert';
 
-export default function Create({ auth }) {
+export default function Create({ auth, projects, users, hubstaffToken }) {
     const [generalError, setGeneralError] = useState('');
     const { data, setData, post, processing, errors, reset } = useForm({
         project_id: '',
@@ -33,6 +32,34 @@ export default function Create({ auth }) {
         });
     };
 
+console.log(projects)
+
+    console.log('Token actual:', hubstaffToken);
+
+    const testApiCall = () => {
+        fetch('https://api.hubstaff.com/v2/projects/2638530/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${hubstaffToken}`
+            },
+            body: JSON.stringify({
+                assignee_id: 2934955,
+                summary: "Test task",
+                metadata: [
+                    {
+                        key: "description",
+                        value: "Test description"
+                    }
+                ]
+            })
+        })
+        .then(response => response.json())
+        .then(data => console.log('Respuesta:', data))
+        .catch(error => console.error('Error:', error));
+    };
+
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Crear Tarea" />
@@ -46,24 +73,28 @@ export default function Create({ auth }) {
                             </h2>
 
                             {generalError && (
-                                <Alert 
-                                    type="error" 
-                                    message={generalError} 
-                                    onClose={() => setGeneralError('')}
-                                />
+                                <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg">
+                                    {generalError}
+                                </div>
                             )}
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <InputLabel htmlFor="project_id" value="ID del Proyecto" />
-                                    <TextInput
+                                    <InputLabel htmlFor="project_id" value="Proyecto" />
+                                    <select
                                         id="project_id"
-                                        type="text"
-                                        className={`mt-1 block w-full ${errors.project_id ? 'border-red-500' : ''}`}
+                                        className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${errors.project_id ? 'border-red-500' : ''}`}
                                         value={data.project_id}
                                         onChange={e => setData('project_id', e.target.value)}
                                         required
-                                    />
+                                    >
+                                        <option value="">Seleccionar proyecto</option>
+                                        {projects.map(project => (
+                                            <option key={project.id} value={project.id}>
+                                                {project.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                     <InputError message={errors.project_id} className="mt-2" />
                                 </div>
 
@@ -96,7 +127,7 @@ export default function Create({ auth }) {
                                     <InputLabel htmlFor="due_date" value="Fecha de Vencimiento" />
                                     <TextInput
                                         id="due_date"
-                                        type="datetime-local"
+                                        type="date"
                                         className={`mt-1 block w-full ${errors.due_date ? 'border-red-500' : ''}`}
                                         value={data.due_date}
                                         onChange={e => setData('due_date', e.target.value)}
@@ -105,14 +136,21 @@ export default function Create({ auth }) {
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="assignee_id" value="ID del Asignado" />
-                                    <TextInput
+                                    <InputLabel htmlFor="assignee_id" value="Asignar a" />
+                                    <select
                                         id="assignee_id"
-                                        type="text"
-                                        className={`mt-1 block w-full ${errors.assignee_id ? 'border-red-500' : ''}`}
+                                        className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${errors.assignee_id ? 'border-red-500' : ''}`}
                                         value={data.assignee_id}
                                         onChange={e => setData('assignee_id', e.target.value)}
-                                    />
+                                    >
+                                        <option value="">Seleccionar usuario</option>
+                                        {users.map(user => (
+                                            <option key={user.id} value={user.id}>
+                                                {user.id} {user.name} ({user.email}) - {user.membership_role} 
+                                                {user.effective_role !== user.membership_role && ` (${user.effective_role})`}
+                                            </option>
+                                        ))}
+                                    </select>
                                     <InputError message={errors.assignee_id} className="mt-2" />
                                 </div>
 

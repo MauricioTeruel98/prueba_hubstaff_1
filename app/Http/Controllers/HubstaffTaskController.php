@@ -6,6 +6,7 @@ use App\Models\HubstaffTask;
 use App\Services\HubstaffService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class HubstaffTaskController extends Controller
 {
@@ -18,7 +19,21 @@ class HubstaffTaskController extends Controller
 
     public function create()
     {
-        return Inertia::render('Tasks/Create');
+        try {
+            $projects = $this->hubstaffService->getProjects();
+            $users = $this->hubstaffService->getOrganizationUsers();
+            $token = Cache::get('hubstaff_access_token');
+
+            return Inertia::render('Tasks/Create', [
+                'projects' => $projects,
+                'users' => $users,
+                'hubstaffToken' => $token
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'error' => 'Error al cargar datos: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function store(Request $request)
@@ -39,8 +54,8 @@ class HubstaffTaskController extends Controller
             HubstaffTask::create([
                 'hubstaff_id' => $hubstaffResponse['task']['id'],
                 'project_id' => $validated['project_id'],
-                'title' => $validated['title'],
-                'description' => $validated['description'],
+                'title' => $hubstaffResponse['task']['summary'],
+                'description' => $hubstaffResponse['task']['details'] ?? '',
                 'due_date' => $validated['due_date'],
                 'assignee_id' => $validated['assignee_id'],
             ]);

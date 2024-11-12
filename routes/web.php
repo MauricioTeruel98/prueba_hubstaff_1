@@ -3,9 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HubstaffTaskController;
 use App\Http\Controllers\HubstaffAuthController;
+use App\Http\Controllers\HubstaffProjectController;
+use App\Http\Controllers\HubstaffActivityController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -17,7 +20,23 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $hubstaffService = app(App\Services\HubstaffService::class);
+    $userData = null;
+    $organizationData = null;
+    
+    try {
+        if (Cache::has('hubstaff_access_token')) {
+            $userData = $hubstaffService->getUserInfo();
+            $organizationData = $hubstaffService->getOrganizationInfo();
+        }
+    } catch (\Exception $e) {
+        // Si hay error, simplemente dejamos los datos como null
+    }
+
+    return Inertia::render('Dashboard', [
+        'hubstaffUser' => $userData,
+        'hubstaffOrganization' => $organizationData
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -34,6 +53,9 @@ Route::middleware('auth')->group(function () {
         ->name('hubstaff.callback')
         ->middleware('web');
     Route::post('/hubstaff/refresh-token', [HubstaffAuthController::class, 'refreshToken'])->name('hubstaff.refresh');
+    Route::get('/projects', [HubstaffProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/{id}', [HubstaffProjectController::class, 'show'])->name('projects.show');
+    Route::get('/activities', [HubstaffActivityController::class, 'index'])->name('activities.index');
 });
 
 require __DIR__.'/auth.php';

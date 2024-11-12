@@ -1,0 +1,100 @@
+{
+    "tasks": [
+        {
+            "id": 141709852,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Overview y desglose",
+            "remote_id": "13109105",
+            "assignee_ids": [
+                2934955
+            ],
+            "metadata": {},
+            "created_at": "2024-10-24T19:48:40.783223Z",
+            "updated_at": "2024-10-31T14:31:41.218868Z"
+        },
+        {
+            "id": 141709853,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Setup del proyecto local",
+            "details": "Laravel + filament\n",
+            "remote_id": "13109112",
+            "assignee_ids": [
+                2934955
+            ],
+            "metadata": {},
+            "created_at": "2024-10-24T19:50:46.696966Z",
+            "updated_at": "2024-11-05T19:46:49.435824Z"
+        },
+        {
+            "id": 142496645,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Creación de login",
+            "remote_id": "13385682",
+            "assignee_ids": [],
+            "metadata": {},
+            "created_at": "2024-11-11T17:11:53.632557Z",
+            "updated_at": "2024-11-11T17:35:16.955796Z"
+        },
+        {
+            "id": 142496646,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Creación de registro de usuarios",
+            "remote_id": "13385683",
+            "assignee_ids": [],
+            "metadata": {},
+            "created_at": "2024-11-11T17:12:01.545544Z",
+            "updated_at": "2024-11-11T17:35:20.820523Z"
+        },
+        {
+            "id": 142496654,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Registro de empresas",
+            "remote_id": "13385685",
+            "assignee_ids": [],
+            "metadata": {},
+            "created_at": "2024-11-11T17:12:12.449846Z",
+            "updated_at": "2024-11-11T17:35:34.734594Z"
+        },
+        {
+            "id": 142496670,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Pagina \"Olvidaste tu contraseña\"",
+            "remote_id": "13385703",
+            "assignee_ids": [],
+            "metadata": {},
+            "created_at": "2024-11-11T17:12:51.753722Z",
+            "updated_at": "2024-11-11T17:36:11.127248Z"
+        },
+        {
+            "id": 142496713,
+            "integration_id": 123067,
+            "status": "active",
+            "project_id": 3197216,
+            "project_type": "project",
+            "summary": "Pagina \"Empresa ya registrada\"",
+            "remote_id": "13385706",
+            "assignee_ids": [],
+            "metadata": {},
+            "created_at": "2024-11-11T17:13:57.093977Z",
+            "updated_at": "2024-11-11T17:37:13.148069Z"
+        }
+    ]
+}
